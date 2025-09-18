@@ -1783,8 +1783,7 @@ fn union_to_interleave() -> Result<()> {
     );
 
     //  Union
-    #[allow(deprecated)]
-    let plan = Arc::new(UnionExec::new(vec![left, right]));
+    let plan = UnionExec::try_new(vec![left, right])?;
 
     // final agg
     let plan =
@@ -1828,8 +1827,7 @@ fn union_not_to_interleave() -> Result<()> {
     );
 
     //  Union
-    #[allow(deprecated)]
-    let plan = Arc::new(UnionExec::new(vec![left, right]));
+    let plan = UnionExec::try_new(vec![left, right])?;
 
     // final agg
     let plan =
@@ -2013,7 +2011,7 @@ fn repartition_ignores_limit() -> Result<()> {
 
 #[test]
 fn repartition_ignores_union() -> Result<()> {
-    let plan = union_exec(vec![parquet_exec(); 5]);
+    let plan = union_exec(vec![parquet_exec(); 5])?;
 
     let expected = &[
         "UnionExec",
@@ -2104,7 +2102,7 @@ fn repartition_ignores_sort_preserving_merge_with_union() -> Result<()> {
     let input = union_exec(vec![
         parquet_exec_with_sort(schema, vec![sort_key.clone()]);
         2
-    ]);
+    ])?;
     let plan = sort_preserving_merge_exec(sort_key, input);
 
     // Test: run EnforceDistribution, then EnforceSort.
@@ -2187,7 +2185,7 @@ fn repartition_does_not_destroy_sort_more_complex() -> Result<()> {
         sort_key,
     );
     let input2 = filter_exec(parquet_exec());
-    let plan = union_exec(vec![input1, input2]);
+    let plan = union_exec(vec![input1, input2])?;
 
     // should not repartition below the SortRequired as that
     // branch doesn't benefit from increased parallelism
@@ -2797,8 +2795,8 @@ fn parallelization_ignores_limit() -> Result<()> {
 
 #[test]
 fn parallelization_union_inputs() -> Result<()> {
-    let plan_parquet = union_exec(vec![parquet_exec(); 5]);
-    let plan_csv = union_exec(vec![csv_exec(); 5]);
+    let plan_parquet = union_exec(vec![parquet_exec(); 5])?;
+    let plan_csv = union_exec(vec![csv_exec(); 5])?;
 
     let test_config = TestConfig::default();
 
@@ -2890,8 +2888,8 @@ fn parallelization_sort_preserving_merge_with_union() -> Result<()> {
         union_exec(vec![
             parquet_exec_with_sort(schema, vec![sort_key.clone()]);
             2
-        ]);
-    let input_csv = union_exec(vec![csv_exec_with_sort(vec![sort_key.clone()]); 2]);
+        ])?;
+    let input_csv = union_exec(vec![csv_exec_with_sort(vec![sort_key.clone()]); 2])?;
     let plan_parquet = sort_preserving_merge_exec(sort_key.clone(), input_parquet);
     let plan_csv = sort_preserving_merge_exec(sort_key, input_csv);
 

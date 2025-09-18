@@ -1783,10 +1783,9 @@ mod test {
         let source1 = sorted_memory_exec(&schema, sort_exprs.clone());
         let source2 = sorted_memory_exec(&schema, sort_exprs);
         // output has multiple partitions, and is sorted
-        #[allow(deprecated)]
-        let union = UnionExec::new(vec![source1, source2]);
+        let union = UnionExec::try_new(vec![source1, source2])?;
         let exec =
-            RepartitionExec::try_new(Arc::new(union), Partitioning::RoundRobinBatch(10))
+            RepartitionExec::try_new(union, Partitioning::RoundRobinBatch(10))
                 .unwrap()
                 .with_preserve_order();
 
@@ -1826,10 +1825,9 @@ mod test {
         let source1 = memory_exec(&schema);
         let source2 = memory_exec(&schema);
         // output has multiple partitions, but is not sorted
-        #[allow(deprecated)]
-        let union = UnionExec::new(vec![source1, source2]);
+        let union = UnionExec::try_new(vec![source1, source2])?;
         let exec =
-            RepartitionExec::try_new(Arc::new(union), Partitioning::RoundRobinBatch(10))
+            RepartitionExec::try_new(union, Partitioning::RoundRobinBatch(10))
                 .unwrap()
                 .with_preserve_order();
 

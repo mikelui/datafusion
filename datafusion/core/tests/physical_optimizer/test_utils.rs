@@ -303,9 +303,8 @@ pub fn sort_preserving_merge_exec_with_fetch(
     Arc::new(SortPreservingMergeExec::new(ordering, input).with_fetch(Some(fetch)))
 }
 
-pub fn union_exec(input: Vec<Arc<dyn ExecutionPlan>>) -> Arc<dyn ExecutionPlan> {
-    #[allow(deprecated)]
-    Arc::new(UnionExec::new(input))
+pub fn union_exec(input: Vec<Arc<dyn ExecutionPlan>>) -> Result<Arc<dyn ExecutionPlan>> {
+    UnionExec::try_new(input)
 }
 
 pub fn local_limit_exec(
